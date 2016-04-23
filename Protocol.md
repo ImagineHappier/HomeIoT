@@ -13,3 +13,6 @@ hue_3_turn_off <br>
 /home/ubuntu/haan/poc/server/hue_2 <br>
 /home/ubuntu/haan/poc/server/hue_3 <br>
 
+#Philpse Hue file content <br>
+on <br>
+of <br>
