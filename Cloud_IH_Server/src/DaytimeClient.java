@@ -26,8 +26,12 @@ public class DaytimeClient {
 			if(debug) System.out.println("DaytimeClient run is started");
 			try{
 				if(out!=null){
-					if(debug) System.out.println("DaytimeClient sends a message: Hue");
-					out.writeUTF("Hue");
+					//if(debug) System.out.println("DaytimeClient sends a message: status");
+					//if(debug) System.out.println("DaytimeClient sends a message: Hue");
+					//out.writeUTF("Hue");
+					//out.writeUTF("status");
+					out.writeUTF("hue_3_turn_on");
+					
 				}
 			}catch (IOException ex) {
 				System.err.println(ex);

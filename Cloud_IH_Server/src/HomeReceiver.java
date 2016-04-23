@@ -33,8 +33,63 @@ public class HomeReceiver extends Thread{
 		}
 	}
 	
-	public ServerSocket getSocket(){
+	public ServerSocket getSocket(Socket socket){
 		return this.socket;
+	}
+	
+	private String receiveMessage(Socket socket){
+		String str="";
+	
+		try{
+			DataInputStream in = new DataInputStream(socket.getInputStream());
+			
+			if(in!=null){
+				try{
+					str=in.readUTF();
+				}catch(IOException e){
+					if(debug) System.out.println("HomeReceiver error 0: "+e.getMessage());
+				}
+			}
+		}catch(IOException e){
+			if(debug) System.out.println("HomeReceiver error 1: "+e.getMessage());
+		}
+		return str;
+	}
+	
+	private int sendMessage(Socket socket, String str){
+		
+		try{
+			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			if(out!=null){
+				try{
+					if(debug) System.out.println("	HomeReceiver, sends a message to Pi: "+str);
+					out.writeUTF(str);
+				}catch(IOException e){
+					if(debug) System.out.println("	HomeReceiver error 2: "+e.getMessage());
+				}
+			}
+		}catch(IOException e){
+			if(debug) System.out.println("	HomeReceiver error 3: "+e.getMessage());
+		}
+		
+		return 0;
+	}
+	
+	private int updateStatus(String file, String msg){
+		
+		BufferedWriter writer;
+		try {
+			writer = new BufferedWriter(new FileWriter(file));
+			writer.write(msg);
+			writer.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		return 0;
 	}
 	
 	@Override
@@ -42,117 +97,40 @@ public class HomeReceiver extends Thread{
 		while (true) {
 			try {
 				Socket connection = socket.accept();
-				System.out.println("HomeReceiver: "+connection.getInetAddress()+":"+connection.getPort()+" is established.");
-				
-				/*/
 				String str=null;
-				InputStream in = connection.getInputStream();
-				StringBuilder strBuilder = new StringBuilder();
-				InputStreamReader reader = new InputStreamReader(in, "ASCII");
-				for (int c = reader.read(); c != -1; c = reader.read()) {
-					strBuilder.append((char) c);
-				}
-				str=strBuilder.toString();
-				System.out.println("Log: message received: "+str);
-				/*/
+				
 				//socket read
-				String str=null;
-				
-				try{
-					DataInputStream in = new DataInputStream(connection.getInputStream());
-					
-					if(in!=null){
-						try{
-							str=in.readUTF();
-							if(debug) System.out.println("HomeReceiver, message received: "+str);
-						}catch(IOException e){
-							if(debug) System.out.println("HomeReceiver error 0: "+e.getMessage());
-						}
-					}
-				}catch(IOException e){
-					if(debug) System.out.println("HomeReceiver error: "+e.getMessage());
-				}
-				//*/
+				str=receiveMessage(connection);
+				if(debug) System.out.println("HomeReceiver: "+str + " ["+connection.getInetAddress() + ":"+ connection.getPort()+"]");
 				
 				if(str==null){
 					System.out.print("str is null!!!!");
 				}
 				
-				if(str.equals("Hue")){
-					if(debug) System.out.println("	HomeReceiver, Hue is verified");
-
-					/*
-					try (Socket socketToHomeThread = new Socket("localhost", HOMETHREAD_PORT)) {
-						socketToHomeThread.setSoTimeout(15000);
-						try{
-							DataOutputStream out = new DataOutputStream(socketToHomeThread.getOutputStream());
-							if(out!=null){
-								try{
-									if(debug) System.out.println("HomeReceiver, sends a message to HomeThread: "+str);
-									out.writeUTF(str);
-								}catch(IOException e){
-									if(debug) System.out.println("HomeReceiver error: "+e.getMessage());
-								}
-							}
-						}catch(IOException e){
-							if(debug) System.out.println("HomeReceiver error: "+e.getMessage());
-						}
-					} catch (IOException ex) {
-						if(debug) System.out.println("HomeReceiver error: "+ex.getMessage());
-					}
-					*/
-					
-					//write the message
-					try{
-						DataOutputStream out = new DataOutputStream(this.homeSocket.getOutputStream());
-						if(out!=null){
-							try{
-								if(debug) System.out.println("	HomeReceiver, sends a message to Pi: "+str);
-								out.writeUTF(str);
-							}catch(IOException e){
-								if(debug) System.out.println("	HomeReceiver error: "+e.getMessage());
-							}
-						}
-					}catch(IOException e){
-						if(debug) System.out.println("	HomeReceiver error 1: "+e.getMessage());
-					}
+				//0~3:hue, 0~5:hue_#, 11~13:on/off
+				if(str.substring(0, 3).equals("hue")){
+					updateStatus(str.substring(0, 5), str.substring(11, 13));
+					if(this.homeSocket!=null)sendMessage(this.homeSocket, str);
 				}
 				
+				//Todo: check status of hue 1,2,3
+				if(str.equals("status")){
+					if(this.homeSocket!=null) sendMessage(this.homeSocket, str);
+				}
+				
+				//try keep connection from Pi. 
+				//Todo: make a thread whenever a new pi is arrived.
 				if(str.equals("Connection")){
+					//change to PiConnection
 					if(debug) System.out.println("HomeReceiver, Connection is verified");
+					
+					// keep the Pi socket information.
 					this.homeSocket=connection;
 
 					//homeThread = new HomeThread(homeSocket, HOMETHREAD_PORT);
 					//pool.submit(homeThread);
 					
-					/*
-					try{
-						Writer out = new OutputStreamWriter(homeSocket.getOutputStream());
-				        out.write("Connected to homeReceiver");
-				        out.flush();
-				        out.close();
-				        if(debug) System.out.println("HomeReceiver, sends a message to Pi: "+str);
-					}catch (IOException ex) {
-						System.err.println(ex);
-					} 
-					*/
-					
-					
-					try{
-						DataOutputStream out = new DataOutputStream(homeSocket.getOutputStream());
-						if(out!=null){
-							try{
-								str="Connected to homeReceiver";
-								if(debug) System.out.println("HomeReceiver, sends a message to Pi: "+str);
-								out.writeUTF(str);
-							}catch(IOException e){
-								if(debug) System.out.println("HomeReceiver error 2: "+e.getMessage());
-							}
-						}
-					}catch(IOException e){
-						if(debug) System.out.println("HomeReceiver error 3: "+e.getMessage());
-					}	
-					if(debug) System.out.println("Connection finished");
+					if(this.homeSocket!=null) sendMessage(homeSocket, "ACK, Connected to homeReceiver");
 				}
 				//connection.close();
 			} catch (IOException ex) {

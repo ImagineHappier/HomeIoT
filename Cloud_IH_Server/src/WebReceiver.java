@@ -48,49 +48,42 @@ public class WebReceiver extends Thread {
 			try (Socket connection = socket.accept()) {
 				String str=null;
 				int intTemp=0;
-				if (debug)System.out.println("WebReceiver: "+ connection.getInetAddress() + ":"+ connection.getPort() + " is established.");
+				//if (debug)System.out.println("WebReceiver: "+ connection.getInetAddress() + ":"+ connection.getPort() + " is established.");
 
 				// read a message from web
-				/*/
-				InputStream in = connection.getInputStream();
-				StringBuilder strBuilder = new StringBuilder();
-				InputStreamReader reader = new InputStreamReader(in, "ASCII");
-				for (int c = reader.read(); c != -1; c = reader.read()) {
-					strBuilder.append((char) c);
-				}
-				str=strBuilder.toString();
-				System.out.println("Log: message received: "+str);
-				/*/
 				try{
 					DataInputStream in = new DataInputStream(connection.getInputStream());
 					if(in!=null){
 						try{
 							str=in.readUTF();
-							//intTemp=in.readInt();
-							if(debug) System.out.println("WebReceiver, message received [str]: "+str);
-							//if(debug) System.out.println("WebReceiver, message received [int]: "+intTemp);
+							if(debug) System.out.println("WebReceiver: "+str + " ["+connection.getInetAddress() + ":"+ connection.getPort()+"]");
 						}catch(IOException e){}
 					}
 				}catch(IOException e){
 				}
-				//*/
-								
+				
+				//send the message to home receiver
+				//try (Socket socketToHomeReceiver = new Socket("localhost", HOMECONNECTION_PORT)) {
 				try (Socket socketToHomeReceiver = new Socket("www.imaginehappier.com", HOMECONNECTION_PORT)) {
 					socketToHomeReceiver.setSoTimeout(15000);
 					try{
 						DataOutputStream out = new DataOutputStream(socketToHomeReceiver.getOutputStream());
 						if(out!=null){
 							try{
-								if(debug) System.out.println("WebReceiver, sends a message to HomeReceiver: "+str);
 								out.writeUTF(str);
-							}catch(IOException e){}
+							}catch(IOException e){
+								if(debug) System.out.println("WebReceiver err 1: "+e.getMessage());
+							}
 						}
 					}catch(IOException e){
+						if(debug) System.out.println("WebReceiver err 2: "+e.getMessage());
 					}
-				} catch (IOException ex) {
+				} catch (IOException e) {
+					if(debug) System.out.println("WebReceiver err 3: "+e.getMessage());
 				}
 				connection.close();
-			} catch (IOException ex) {
+			} catch (IOException e) {
+				if(debug) System.out.println("WebReceiver err 4: "+e.getMessage());
 			}
 		}
 
