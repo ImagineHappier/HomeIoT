@@ -10,13 +10,15 @@ public class DaytimeClient {
 	static class ClientSender extends Thread {
 		Socket socket;
 		DataOutputStream out;
-		
+		DataInputStream in;
 		ClientSender(Socket socket){
 			
 			this.socket=socket;
 			
 			try{
 				out=new DataOutputStream(socket.getOutputStream());
+				in = new DataInputStream(socket.getInputStream());
+				
 			}catch(Exception e){}
 			
 			if(debug) System.out.println("DaytimeClient ClientSender is started");
@@ -26,16 +28,13 @@ public class DaytimeClient {
 			if(debug) System.out.println("DaytimeClient run is started");
 			try{
 				if(out!=null){
-					//if(debug) System.out.println("DaytimeClient sends a message: status");
-					//if(debug) System.out.println("DaytimeClient sends a message: Hue");
-					//out.writeUTF("Hue");
-					//out.writeUTF("status");
-					out.writeUTF("hue_3_turn_on");
-					
+					//out.writeUTF("hue_3_turn_off");
+					out.writeUTF("hue_0_stat_00");
 				}
 			}catch (IOException ex) {
 				System.err.println(ex);
 			}
+						
 		}
 	}
 	

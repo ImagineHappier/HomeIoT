@@ -62,7 +62,11 @@ public class HomeReceiver extends Thread{
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			if(out!=null){
 				try{
-					if(debug) System.out.println("	HomeReceiver, sends a message to Pi: "+str);
+					if(debug) System.out.println("	Send a message to "
+				+"["+socket.getInetAddress() + ":"+ socket.getPort()+"]: "+str);
+					
+					
+					
 					out.writeUTF(str);
 				}catch(IOException e){
 					if(debug) System.out.println("	HomeReceiver error 2: "+e.getMessage());
@@ -92,30 +96,88 @@ public class HomeReceiver extends Thread{
 		return 0;
 	}
 	
+	private String getBulbStatus(String file){
+		String str="";
+		String line = null;
+		
+		File fp=null;;
+		FileReader fileReader=null;
+		BufferedReader reader=null;
+		
+		try {
+			fp = new File(file);
+			fileReader = new FileReader(fp);	
+			reader = new BufferedReader(fileReader);
+			
+			if((line = reader.readLine()) != null){
+				str+=line;
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return str;
+		
+	}
+	
+	private String getHueStatus(Socket socket){
+		//socket is not used yet.
+		String str="";
+		str+="hue_1:"+getBulbStatus("hue_1")+",";
+		str+="hue_2:"+getBulbStatus("hue_2")+",";
+		str+="hue_3:"+getBulbStatus("hue_3");
+		return str;
+	}
+	
 	@Override
 	public void run() {
 		while (true) {
 			try {
+				//if a connection comes
 				Socket connection = socket.accept();
 				String str=null;
 				
-				//socket read
+				//read a message from the connection 
 				str=receiveMessage(connection);
 				if(debug) System.out.println("HomeReceiver: "+str + " ["+connection.getInetAddress() + ":"+ connection.getPort()+"]");
 				
+				//if string is null, it might be in a problem situation. Hope not to see it
 				if(str==null){
 					System.out.print("str is null!!!!");
 				}
-				
+
+				//hue_3_turn_off
 				//0~3:hue, 0~5:hue_#, 11~13:on/off
-				if(str.substring(0, 3).equals("hue")){
-					updateStatus(str.substring(0, 5), str.substring(11, 13));
-					if(this.homeSocket!=null)sendMessage(this.homeSocket, str);
-				}
 				
-				//Todo: check status of hue 1,2,3
-				if(str.equals("status")){
-					if(this.homeSocket!=null) sendMessage(this.homeSocket, str);
+				//if the message starts from "hue"
+				if(str.substring(0, 3).equals("hue")){
+
+					//if operation in a message is status
+					if(str.substring(6, 10).equals("stat")){
+						//read status of each bulb from status file, then generate a message. 
+						String strHueStatus=getHueStatus(homeSocket);
+						System.out.println("	Hue Status: "+strHueStatus);
+						
+						//send status message to the connection.
+						if(connection!=null)sendMessage(connection, strHueStatus);
+						
+						//function test
+						//if(connection!=null)sendMessage(this.homeSocket, strHueStatus);
+					}
+					
+					//if operation in a message is turn on/off
+					if(str.substring(6, 10).equals("turn")){
+						//update the bulb status file.
+						updateStatus(str.substring(0, 5), str.substring(11, 13));
+						
+						//send message to Pi
+						if(this.homeSocket!=null)sendMessage(this.homeSocket, str);
+					}
 				}
 				
 				//try keep connection from Pi. 
