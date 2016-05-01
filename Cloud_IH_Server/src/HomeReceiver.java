@@ -58,6 +58,7 @@ public class HomeReceiver extends Thread{
 	
 	private int sendMessage(Socket socket, String str){
 		
+		System.out.println("HomeReceiver, error check: "+ str);
 		try{
 			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 			if(out!=null){
@@ -144,16 +145,23 @@ public class HomeReceiver extends Thread{
 				
 				//read a message from the connection 
 				str=receiveMessage(connection);
+				System.out.println("HomeReceiver, str check: " + str);
+				
 				if(debug) System.out.println("HomeReceiver: "+str + " ["+connection.getInetAddress() + ":"+ connection.getPort()+"]");
 				
 				//if string is null, it might be in a problem situation. Hope not to see it
 				if(str==null){
 					System.out.print("str is null!!!!");
+					continue;
+				}
+				if(str.length()<=1){
+					System.out.print("str is <=1!!!!");
+					continue;
 				}
 
 				//hue_3_turn_off
 				//0~3:hue, 0~5:hue_#, 11~13:on/off
-				
+			if(str.length()>1){
 				//if the message starts from "hue"
 				if(str.substring(0, 3).equals("hue")){
 
@@ -179,7 +187,8 @@ public class HomeReceiver extends Thread{
 						if(this.homeSocket!=null)sendMessage(this.homeSocket, str);
 					}
 				}
-				
+			}
+			
 				//try keep connection from Pi. 
 				//Todo: make a thread whenever a new pi is arrived.
 				if(str.equals("Connection")){

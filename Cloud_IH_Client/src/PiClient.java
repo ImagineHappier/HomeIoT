@@ -69,7 +69,8 @@ public class PiClient {
 				if(str.substring(0, 3).equals("hue")){
 					try {
 						System.out.println("ClientReceiver: "+str);
-						str="api/"+str;
+						//str="api/"+str;
+						str="python "+str+".py";
 						System.out.println("ClientReceiver execute file: "+str);
 						oProcess = new ProcessBuilder("/bin/sh","-c",str).start();
 						//oProcess = new ProcessBuilder("/bin/sh","-c","api/python 3_turnon.py").start();

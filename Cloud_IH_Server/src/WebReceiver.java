@@ -57,10 +57,28 @@ public class WebReceiver extends Thread {
 						try{
 							str=in.readUTF();
 							if(debug) System.out.println("WebReceiver: "+str + " ["+connection.getInetAddress() + ":"+ connection.getPort()+"]");
-						}catch(IOException e){}
+						}catch(IOException e){
+							
+						}
+						
 					}
 				}catch(IOException e){
 				}
+				
+				//send ack
+				try{
+					DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+					if(out!=null){
+						try{
+							out.writeUTF("ACK");
+						}catch(IOException e){
+							if(debug) System.out.println("WebReceiver err 1: "+e.getMessage());
+						}
+					}
+				}catch(IOException e){
+					if(debug) System.out.println("WebReceiver err 2: "+e.getMessage());
+				}
+				
 				
 				//send the message to home receiver
 				//try (Socket socketToHomeReceiver = new Socket("localhost", HOMECONNECTION_PORT)) {
