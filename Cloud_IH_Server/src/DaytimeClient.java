@@ -28,8 +28,8 @@ public class DaytimeClient {
 			if(debug) System.out.println("DaytimeClient run is started");
 			try{
 				if(out!=null){
-					//out.writeUTF("hue_3_turn_off");
-					out.writeUTF("hue_0_stat_00");
+					out.writeUTF("hue_3_turn_off");
+					//out.writeUTF("hue_0_stat_00");
 				}
 			}catch (IOException ex) {
 				System.err.println(ex);

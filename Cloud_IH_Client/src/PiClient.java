@@ -17,7 +17,6 @@ public class PiClient {
 			
 			this.socket=socket;
 			
-			
 			try{
 				out=new DataOutputStream(socket.getOutputStream());
 			}catch(Exception e){}
@@ -27,16 +26,6 @@ public class PiClient {
 		
 		public void run(){
 			if(debug) System.out.println("ClientSender run is started");
-			/*/
-			try{
-				Writer out = new OutputStreamWriter(socket.getOutputStream());
-		        out.write("Connection"+ "\r\n");
-		        out.flush();
-		        //out.close();
-			}catch (IOException ex) {
-				System.err.println(ex);
-			}    
-			/*/
 			try{
 				if(out!=null){
 					if(debug) System.out.println("ClientSender sends a message: Connection");
@@ -45,7 +34,6 @@ public class PiClient {
 			}catch (IOException ex) {
 				System.err.println(ex);
 			}
-			//*/
 		}
 	}
 	static class ClientReceiver extends Thread{
@@ -77,38 +65,21 @@ public class PiClient {
 					//if(debug) System.out.println("ClientReceiver error 1: "+e.getMessage());
 				}
 				
-				if(str.equals("Hue")){
+				
+				if(str.substring(0, 3).equals("hue")){
 					try {
-						oProcess = new ProcessBuilder("/bin/sh","-c","python 3_turnon.py").start();
+						System.out.println("ClientReceiver: "+str);
+						str="api/"+str;
+						System.out.println("ClientReceiver execute file: "+str);
+						oProcess = new ProcessBuilder("/bin/sh","-c",str).start();
+						//oProcess = new ProcessBuilder("/bin/sh","-c","api/python 3_turnon.py").start();
 						//oProcess = new ProcessBuilder("cmd", "/c", "dir", "/?").start();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 					str="";
-					
-					/*
-					// 외부 프로그램 출력 읽기
-				    stdOut   = new BufferedReader(new InputStreamReader(oProcess.getInputStream()));
-				    stdError = new BufferedReader(new InputStreamReader(oProcess.getErrorStream()));
-
-				    // "표준 출력"과 "표준 에러 출력"을 출력
-				    try {
-						while ((s =   stdOut.readLine()) != null) System.out.println(s);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				    try {
-						while ((s = stdError.readLine()) != null) System.err.println(s);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					*/
-
 				}
-				
 			}
 		}
 	}
