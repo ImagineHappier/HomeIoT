@@ -2,7 +2,7 @@ import json
 import requests
 import time
 
-ip="http://192.168.0.8"
+ip="http://192.168.1.78"
 headers ={'Content-type':'application/json','Accept':'text/plain'}
 
 url = ip+'/api/newdeveloper/lights/3/state'

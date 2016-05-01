@@ -5,9 +5,9 @@ import time
 ip="http://192.168.1.78"
 headers ={'Content-type':'application/json','Accept':'text/plain'}
 
-url = ip+'/api/newdeveloper/lights/2/state'
+url = ip+'/api/newdeveloper/lights/3/state'
 try:
-	pdata = {"on":True, "sat":255, "bri":255,"hue":255}
+	pdata = {"on":False, "sat":255, "bri":255,"hue":1000}
 	r = requests.put(url,data=json.dumps(pdata),headers=headers)
         print r.text
 
